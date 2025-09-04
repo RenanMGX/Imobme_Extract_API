@@ -12,6 +12,14 @@ from time import sleep
 from .exeptions import *
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
+from botcity.maestro import * #type: ignore
+
+maestro:BotMaestroSDK|None = BotMaestroSDK.from_sys_args()
+try:
+    execution = maestro.get_execution()
+except:
+    maestro = None
+
 
 class Imobme(NavegadorChrome):
     @property
@@ -131,12 +139,12 @@ class Imobme(NavegadorChrome):
         self._encerrar()
             
     def _encerrar(self):
-        if not self.debug:
-            try:
-                shutil.rmtree(self.download_path)
-            except Exception as error:
-                print(P(f"não foi possivel apagar a pasta {self.download_path} pelo motivo:\n{str(error)}", color='red'))   
-            
+        # if not self.debug:
+        #     try:
+        #         shutil.rmtree(self.download_path)
+        #     except Exception as error:
+        #         pass
+        #         #print(P(f"não foi possivel apagar a pasta {self.download_path} pelo motivo:\n{str(error)}", color='red'))               
         try:
             self.quit()
         except:
@@ -192,7 +200,7 @@ class Imobme(NavegadorChrome):
                 self.title
             except:
                 return
-            if linha > 30:
+            if linha > 20:
                 return        
             try:
                 self.find_element(By.XPATH, f'//*[@id="result-table"]/tbody/tr[{linha}]/td[11]/a/i', timeout=5)
@@ -224,8 +232,23 @@ class Imobme(NavegadorChrome):
                     print("Erro: Excedeu o limite de tentativas")
                     break    
     
+    valid_relatorios = [
+            "imobme_empreendimento",
+            "imobme_controle_vendas",
+            "imobme_controle_vendas_90_dias",
+            "imobme_contratos_rescindidos",
+            "imobme_contratos_rescindidos_90_dias",
+            "imobme_dados_contrato",
+            "imobme_previsao_receita",
+            "imobme_relacao_clientes",
+            "imobme_relacao_clientes_x_clientes",
+            "imobme_cadastro_datas",
+            "recebimentos_compensados",
+            "imobme_controle_estoque",
+        ]
+    
     @logar
-    def extrair_relatorios(self, relatorios:List[str]) -> list:
+    def extrair_relatorios(self, relatorios:List[str]) -> List[dict]:
         """Lista de relatórios a serem extraídos:
         - imobme_empreendimento
         - imobme_controle_vendas
@@ -246,7 +269,7 @@ class Imobme(NavegadorChrome):
         self._load_page("Relatorio")
         
         # Extração de Relatorios
-        ids_relatorios = []
+        ids_relatorios:dict = {}
         
         ### --------------------------------------------------------- ###
         # Relatorio IMOBME - Empreendimento
@@ -262,14 +285,15 @@ class Imobme(NavegadorChrome):
                     
                     self.find_element(By.XPATH, '//*[@id="GerarRelatorio"]').click() # clica em gerar relatorio
                     sleep(7)
-                    ids_relatorios.append(self.find_element(By.XPATH, '//*[@id="result-table"]/tbody/tr[1]/td[1]').text)
+                    ids_relatorios["imobme_empreendimento"] = self.find_element(By.XPATH, '//*[@id="result-table"]/tbody/tr[1]/td[1]').text
                     print(P(f"o relatorio 'imobme_empreendimento' foi gerado!"))
                     break
                     
                 except Exception as error:
                     print(P(str(error), color='red'))
                     if _ >= 4:
-                        pass
+                        if maestro:
+                            maestro.error(task_id=int(execution.task_id), exception=error)
         
         # Relatorio IMOBME - Controle de Vendas          
         if "imobme_controle_vendas" in relatorios:
@@ -290,14 +314,15 @@ class Imobme(NavegadorChrome):
                     
                     self.find_element(By.XPATH, '//*[@id="GerarRelatorio"]').click() # clica em gerar relatorio
                     sleep(7)
-                    ids_relatorios.append(self.find_element(By.XPATH, '//*[@id="result-table"]/tbody/tr[1]/td[1]').text)
+                    ids_relatorios["imobme_controle_vendas"] = self.find_element(By.XPATH, '//*[@id="result-table"]/tbody/tr[1]/td[1]').text
                     print(P(f"o relatorio 'imobme_controle_vendas' foi gerado!"))
                     break
                     
                 except Exception as error:
                     print(P(str(error), color='red'))
                     if _ >= 4:
-                        pass
+                        if maestro:
+                            maestro.error(task_id=int(execution.task_id), exception=error)
                     
         # Relatorio IMOBME - Controle de Vendas 90 dias     
         if "imobme_controle_vendas_90_dias" in relatorios:
@@ -318,14 +343,15 @@ class Imobme(NavegadorChrome):
                     
                     self.find_element(By.XPATH, '//*[@id="GerarRelatorio"]').click() # clica em gerar relatorio
                     sleep(7)
-                    ids_relatorios.append(self.find_element(By.XPATH, '//*[@id="result-table"]/tbody/tr[1]/td[1]').text)
+                    ids_relatorios["imobme_controle_vendas_90_dias"] = self.find_element(By.XPATH, '//*[@id="result-table"]/tbody/tr[1]/td[1]').text
                     print(P(f"o relatorio 'imobme_controle_vendas_90_dias' foi gerado!"))
                     break
                     
                 except Exception as error:
                     print(P(str(error), color='red'))
                     if _ >= 4:
-                        pass
+                        if maestro:
+                            maestro.error(task_id=int(execution.task_id), exception=error)
                     
         # Relatorio IMOBME - Contratos Rescindidos 90 dias     
         if "imobme_contratos_rescindidos" in relatorios:
@@ -347,14 +373,15 @@ class Imobme(NavegadorChrome):
                     
                     self.find_element(By.XPATH, '//*[@id="GerarRelatorio"]').click() # clica em gerar relatorio
                     sleep(7)
-                    ids_relatorios.append(self.find_element(By.XPATH, '//*[@id="result-table"]/tbody/tr[1]/td[1]').text)
+                    ids_relatorios["imobme_contratos_rescindidos"] = self.find_element(By.XPATH, '//*[@id="result-table"]/tbody/tr[1]/td[1]').text
                     print(P(f"o relatorio 'imobme_contratos_rescindidos' foi gerado!"))
                     break
                     
                 except Exception as error:
                     print(P(str(error), color='red'))
                     if _ >= 4:
-                        pass
+                        if maestro:
+                            maestro.error(task_id=int(execution.task_id), exception=error)
 
         # Relatorio IMOBME - Contratos Rescindidos 90 dias     
         if "imobme_contratos_rescindidos_90_dias" in relatorios:
@@ -376,14 +403,15 @@ class Imobme(NavegadorChrome):
                     
                     self.find_element(By.XPATH, '//*[@id="GerarRelatorio"]').click() # clica em gerar relatorio
                     sleep(7)
-                    ids_relatorios.append(self.find_element(By.XPATH, '//*[@id="result-table"]/tbody/tr[1]/td[1]').text)
+                    ids_relatorios["imobme_contratos_rescindidos_90_dias"] = self.find_element(By.XPATH, '//*[@id="result-table"]/tbody/tr[1]/td[1]').text
                     print(P(f"o relatorio 'imobme_contratos_rescindidos_90_dias' foi gerado!"))
                     break
                     
                 except Exception as error:
                     print(P(str(error), color='red'))
                     if _ >= 4:
-                        pass
+                        if maestro:
+                            maestro.error(task_id=int(execution.task_id), exception=error)
 
         # Relatorio IMOBME - Dados do Contrato     
         if "imobme_dados_contrato" in relatorios:
@@ -404,14 +432,15 @@ class Imobme(NavegadorChrome):
                     
                     self.find_element(By.XPATH, '//*[@id="GerarRelatorio"]').click() # clica em gerar relatorio
                     sleep(7)
-                    ids_relatorios.append(self.find_element(By.XPATH, '//*[@id="result-table"]/tbody/tr[1]/td[1]').text)
+                    ids_relatorios["imobme_dados_contrato"] = self.find_element(By.XPATH, '//*[@id="result-table"]/tbody/tr[1]/td[1]').text
                     print(P(f"o relatorio 'imobme_dados_contrato' foi gerado!"))
                     break
                     
                 except Exception as error:
                     print(P(str(error), color='red'))
                     if _ >= 4:
-                        pass
+                        if maestro:
+                            maestro.error(task_id=int(execution.task_id), exception=error)
 
         # Relatorio IMOBME - Previsão de Receita     
         if "imobme_previsao_receita" in relatorios:
@@ -436,14 +465,15 @@ class Imobme(NavegadorChrome):
                     
                     self.find_element(By.XPATH, '//*[@id="GerarRelatorio"]').click() # clica em gerar relatorio
                     sleep(7)
-                    ids_relatorios.append(self.find_element(By.XPATH, '//*[@id="result-table"]/tbody/tr[1]/td[1]').text)
+                    ids_relatorios["imobme_previsao_receita"] = self.find_element(By.XPATH, '//*[@id="result-table"]/tbody/tr[1]/td[1]').text
                     print(P(f"o relatorio 'imobme_previsao_receita' foi gerado!"))
                     break
                     
                 except Exception as error:
                     print(P(str(error), color='red'))
                     if _ >= 4:
-                        pass
+                        if maestro:
+                            maestro.error(task_id=int(execution.task_id), exception=error)
      
         # Relatorio IMOBME - Relação de Clientes    
         if "imobme_relacao_clientes" in relatorios:
@@ -459,14 +489,15 @@ class Imobme(NavegadorChrome):
                     
                     self.find_element(By.XPATH, '//*[@id="GerarRelatorio"]').click() # clica em gerar relatorio
                     sleep(7)
-                    ids_relatorios.append(self.find_element(By.XPATH, '//*[@id="result-table"]/tbody/tr[1]/td[1]').text)
+                    ids_relatorios["imobme_relacao_clientes"] = self.find_element(By.XPATH, '//*[@id="result-table"]/tbody/tr[1]/td[1]').text
                     print(P(f"o relatorio 'imobme_relacao_clientes' foi gerado!"))
                     break
                     
                 except Exception as error:
                     print(P(str(error), color='red'))
                     if _ >= 4:
-                        pass
+                        if maestro:
+                            maestro.error(task_id=int(execution.task_id), exception=error)
      
         # Relatorio IMOBME - Relação de Clientes x Clientes  
         if "imobme_relacao_clientes_x_clientes" in relatorios:
@@ -490,14 +521,15 @@ class Imobme(NavegadorChrome):
                     
                     self.find_element(By.XPATH, '//*[@id="GerarRelatorio"]').click() # clica em gerar relatorio
                     sleep(7)
-                    ids_relatorios.append(self.find_element(By.XPATH, '//*[@id="result-table"]/tbody/tr[1]/td[1]').text)
+                    ids_relatorios["imobme_relacao_clientes_x_clientes"] = self.find_element(By.XPATH, '//*[@id="result-table"]/tbody/tr[1]/td[1]').text
                     print(P(f"o relatorio 'imobme_relacao_clientes_x_clientes' foi gerado!"))
                     break
                     
                 except Exception as error:
                     print(P(str(error), color='red'))
                     if _ >= 4:
-                        pass
+                        if maestro:
+                            maestro.error(task_id=int(execution.task_id), exception=error)
                     
         # Relatorio IMOBME - Cadastro de Datas
         if "imobme_cadastro_datas" in relatorios:
@@ -512,14 +544,15 @@ class Imobme(NavegadorChrome):
                     
                     self.find_element(By.XPATH, '//*[@id="GerarRelatorio"]').click() # clica em gerar relatorio
                     sleep(7)
-                    ids_relatorios.append(self.find_element(By.XPATH, '//*[@id="result-table"]/tbody/tr[1]/td[1]').text)
+                    ids_relatorios["imobme_cadastro_datas"] = self.find_element(By.XPATH, '//*[@id="result-table"]/tbody/tr[1]/td[1]').text
                     print(P(f"o relatorio 'imobme_cadastro_datas' foi gerado!"))
                     break
                     
                 except Exception as error:
                     print(P(str(error), color='red'))
                     if _ >= 4:
-                        pass
+                        if maestro:
+                            maestro.error(task_id=int(execution.task_id), exception=error)
          
         # Relatorio Recebimentos Compensados
         if "recebimentos_compensados" in relatorios:
@@ -538,14 +571,15 @@ class Imobme(NavegadorChrome):
                     
                     self.find_element(By.XPATH, '//*[@id="GerarRelatorio"]').click() # clica em gerar relatorio
                     sleep(7)
-                    ids_relatorios.append(self.find_element(By.XPATH, '//*[@id="result-table"]/tbody/tr[1]/td[1]').text)
+                    ids_relatorios["recebimentos_compensados"] = self.find_element(By.XPATH, '//*[@id="result-table"]/tbody/tr[1]/td[1]').text
                     print(P(f"o relatorio 'recebimentos_compensados' foi gerado!"))
                     break
                     
                 except Exception as error:
                     print(P(str(error), color='red'))
                     if _ >= 4:
-                        pass
+                        if maestro:
+                            maestro.error(task_id=int(execution.task_id), exception=error)
          
         # Relatorio IMOBME - Controle de Estoque
         if "imobme_controle_estoque" in relatorios:
@@ -562,14 +596,15 @@ class Imobme(NavegadorChrome):
                     
                     self.find_element(By.XPATH, '//*[@id="GerarRelatorio"]').click() # clica em gerar relatorio
                     sleep(7)
-                    ids_relatorios.append(self.find_element(By.XPATH, '//*[@id="result-table"]/tbody/tr[1]/td[1]').text)
+                    ids_relatorios["imobme_controle_estoque"] = self.find_element(By.XPATH, '//*[@id="result-table"]/tbody/tr[1]/td[1]').text
                     print(P(f"o relatorio 'imobme_controle_estoque' foi gerado!"))
                     break
                     
                 except Exception as error:
                     print(P(str(error), color='red'))
                     if _ >= 4:
-                        pass
+                        if maestro:
+                            maestro.error(task_id=int(execution.task_id), exception=error)
                     
         ### --------------------------------------------------------- ###         
         
@@ -606,7 +641,7 @@ class Imobme(NavegadorChrome):
                 table = self.find_element(By.ID, 'result-table')
                 tbody = table.find_element(By.TAG_NAME, 'tbody')
                 for tr in tbody.find_elements(By.TAG_NAME, 'tr'):
-                    for id in ids_relatorios:
+                    for key,id in ids_relatorios.items():
                         downloaded = False
                         if id == tr.find_elements(By.TAG_NAME, 'td')[0].text:
                             for tag_a in tr.find_elements(By.TAG_NAME, 'a'):
@@ -614,8 +649,10 @@ class Imobme(NavegadorChrome):
                                     print()
                                     print(P(f"o {id=} foi baixado!", color='green'))
                                     tag_a.send_keys(Keys.ENTER)
-                                    ids_relatorios.pop(ids_relatorios.index(id))
-                                    relatorios_paths.append(self._verificar_download())
+                                    #ids_relatorios.pop(ids_relatorios.index(id))
+                                    del ids_relatorios[key]
+                                    
+                                    relatorios_paths.append({key:self._verificar_download()})
                                     downloaded = True
                                 try:
                                     if downloaded:

@@ -26,6 +26,9 @@ from botcity.maestro import * #type: ignore
 import traceback
 from patrimar_dependencies.gemini_ia import ErrorIA
 from patrimar_dependencies.screenshot import screenshot
+from main import ExecuteAPP
+import json
+import os
 
 # Disable errors if we are not connected to Maestro
 BotMaestroSDK.RAISE_NOT_CONNECTED = False #type: ignore
@@ -55,9 +58,75 @@ class Processos:
 
 class Execute:
     @staticmethod
-    def start():
+    def start():            
+        crd_param = execution.parameters.get("crd")
+        if not isinstance(crd_param, str):
+            raise ValueError("Parâmetro 'crd_param' deve ser uma string representando o label da credencial.")
+        
+        lista_relatorios_param = execution.parameters.get("lista_relatorios")
+        if not lista_relatorios_param:
+            raise Exception(f"O parametro {lista_relatorios_param=} está vazio!")
+        else:
+            temp_lista_relatorios = str(lista_relatorios_param)
+            lista_relatorios:dict = {value.split(',')[0]:{"file_name": value.split(',')[1]} for value in temp_lista_relatorios.split(';')}
+
+        destino_param = execution.parameters.get("destino")
+        if not destino_param:
+            raise Exception(f"O parametro {destino_param=} está vazio!")
+        else:
+            destino:str = str(destino_param)
+            for key, value in lista_relatorios.items():
+                lista_relatorios[key]["destino"] = destino
+        
+        extension_param = execution.parameters.get("extension")
+        if not extension_param:
+            raise Exception(f"O parametro {extension_param=} está vazio!")
+        else:
+            extension:str = str(extension_param)
+            for key, value in lista_relatorios.items():
+                lista_relatorios[key]["extension"] = extension
+                
+        headless_param = execution.parameters.get("headless")
+        if not headless_param:
+            headless = False
+        else:
+            headless = str(headless_param).lower() == "true"
+            
+        quantidade_param = execution.parameters.get("quantidade")
+        if not quantidade_param:
+            quantidade = 1
+        else:
+            try:
+                quantidade = int(str(quantidade_param))
+            except:
+                quantidade = 1
+        
+        
+        app = ExecuteAPP(
+            login=maestro.get_credential(label=crd_param, key="login"),
+            password=maestro.get_credential(label=crd_param, key="password"),
+            url=maestro.get_credential(label=crd_param, key="url"),
+            headless=headless
+        )
+            
+        try:
+            app.start(lista_relatorios=lista_relatorios, quantidade=quantidade)
+            
+            if os.path.exists(app.path_api):
+                api_path = os.listdir(app.path_api)
+                if api_path:
+                    for file in api_path:
+                        file = os.path.join(app.path_api, file)
+                        maestro.post_artifact(
+                            task_id=int(execution.task_id),
+                            artifact_name=os.path.basename(file),
+                            filepath=file
+                        ) 
+                    
+        finally:    
+            app._limpar()
+
         p.add_processado()
-        pass
 
 if __name__ == '__main__':
     maestro = BotMaestroSDK.from_sys_args()
