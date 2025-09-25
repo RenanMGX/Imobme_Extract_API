@@ -26,6 +26,7 @@ from botcity.maestro import * #type: ignore
 import traceback
 from patrimar_dependencies.gemini_ia import ErrorIA
 from patrimar_dependencies.screenshot import screenshot
+from Entities.processos import Processos
 from main import ExecuteAPP
 import json
 import os
@@ -33,28 +34,6 @@ import os
 # Disable errors if we are not connected to Maestro
 BotMaestroSDK.RAISE_NOT_CONNECTED = False #type: ignore
 
-class Processos:
-    @property
-    def total(self) -> int:
-        return self.__total
-    
-    @property
-    def processados(self) -> int:
-        return self.__processados
-    
-    @property
-    def falhas(self) -> int:
-        result = self.total - self.processados
-        return result if result >= 0 else 0
-    
-    def __init__(self, value:int) -> None:
-        self.__total:int = value
-        self.__processados:int = 0
-        
-    def add_processado(self, value:int=1):
-        for _ in range(value):
-            if (self.processados + 1) <= self.total:
-                self.__processados += 1
 
 class Execute:
     @staticmethod
@@ -101,12 +80,14 @@ class Execute:
             except:
                 quantidade = 1
         
+        p.total = len(lista_relatorios)
         
         app = ExecuteAPP(
             login=maestro.get_credential(label=crd_param, key="login"),
             password=maestro.get_credential(label=crd_param, key="password"),
             url=maestro.get_credential(label=crd_param, key="url"),
-            headless=headless
+            headless=headless,
+            p=p
         )
             
         try:

@@ -13,6 +13,7 @@ from typing import List, Dict
 from patrimar_dependencies.sharepointfolder import SharePointFolders
 from datetime import datetime
 from botcity.maestro import * #type: ignore
+from Entities.processos import Processos
 
 maestro:BotMaestroSDK|None = BotMaestroSDK.from_sys_args()
 try:
@@ -20,6 +21,11 @@ try:
 except:
     maestro = None
 
+
+lock = mp.Lock()
+def init_worker(l):
+    global lock
+    lock = l
 
 class ExecuteAPP:
     def _separar_relatorios(self, *, lista:list, quantidade:int=4):
@@ -46,7 +52,7 @@ class ExecuteAPP:
         if os.path.exists(self.path_api):
             shutil.rmtree(self.path_api, ignore_errors=True)
 
-    def __init__(self, *, login:str, password:str, url:str, headless:bool=False):
+    def __init__(self, *, login:str, password:str, url:str, headless:bool=False, p:Processos|None=None):
         self.__login = login
         self.__password = password
         self.__url = url
@@ -58,14 +64,19 @@ class ExecuteAPP:
             os.makedirs(self.path_api)
             
         self.headless:bool = headless
+        
+        self.p:Processos|None = p
 
     def _extrair_relatorios(self, grupos:list) -> List[dict]:
-        imob = Imobme(
-            login=self.__login,
-            password=self.__password,
-            url=self.__url,
-            headless=self.headless,
-        )
+        global lock
+        
+        with lock:
+            imob = Imobme(
+                login=self.__login,
+                password=self.__password,
+                url=self.__url,
+                headless=self.headless,
+            )
 
         try:
             resultado = imob.extrair_relatorios(grupos)
@@ -105,6 +116,9 @@ class ExecuteAPP:
                 Arquivos(file_path=data['path_file']).save_csv_to(move_to=moveTo, file_name=(data["file_name"] if data.get("file_name") else ""))
             else:
                 Arquivos(file_path=data['path_file']).save_excel_to(move_to=moveTo, file_name=(data["file_name"] if data.get("file_name") else ""))
+        
+        if not self.p is None:
+            self.p.add_processado(len(lista_relatorios_temp))
             
 
         return resultado
@@ -185,7 +199,8 @@ class ExecuteAPP:
         
         lista_relatorios_temp = self._separar_relatorios(lista=list(lista_relatorios.keys()), quantidade=quantidade) #type:ignore
         
-        pool = mp.Pool(processes=num_process)
+        l = mp.Lock()
+        pool = mp.Pool(initializer=init_worker, initargs=(l,),processes=num_process)
         
         resultados:List[dict] = pool.map(self._extrair_relatorios, lista_relatorios_temp) #type:ignore
         
