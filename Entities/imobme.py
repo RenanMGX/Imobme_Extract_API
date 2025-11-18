@@ -658,13 +658,21 @@ class Imobme(NavegadorChrome):
                                     if downloaded:
                                         if tag_a.get_attribute('title') == 'Excluir':
                                             tag_a.send_keys(Keys.ENTER)
-                                            self.find_element(By.XPATH, '/html/body/div[5]/div[3]/div/button[1]/span').click()
+                                            #self.find_element(By.XPATH, '/html/body/div[5]/div[3]/div/button[1]/span').click()
+                                            for button in self.find_elements(By.TAG_NAME, 'button'):
+                                                if button.text == "Confirmar": #bt para confirmar exclusao
+                                                    button.click()
+                                                    break
                                             print()
                                             print(P(f"o {id=} foi excluido!", color='red'))
                                 except:
                                     pass
                                 try:
-                                    self.find_element(By.XPATH, '/html/body/div[5]/div[3]/div/button[2]/span').click()
+                                    #self.find_element(By.XPATH, '/html/body/div[5]/div[3]/div/button[2]/span').click()
+                                    for button in self.find_elements(By.TAG_NAME, 'button'):
+                                        if button.text == "Cancelar": #bt para cancelar exclusao
+                                            button.click()
+                                            break
                                 except:
                                     pass
             except:
