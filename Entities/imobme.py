@@ -108,6 +108,7 @@ class Imobme(NavegadorChrome):
     @logar   
     def _select_relatorio(self, relat:str):
         self._load_page("Relatorio")
+        self.maximize_window()
         self.find_element(By.XPATH, '//*[@id="Content"]').location_once_scrolled_into_view
         self.find_element(By.ID, 'Relatorios_chosen').click() # clique em selecionar Relatorios
         
@@ -458,7 +459,10 @@ class Imobme(NavegadorChrome):
                     self.find_element(By.XPATH, '//*[@id="dvEmpreendimento"]/div[1]/div/div/button').click() # clica em Empreendimentos
                     self.find_element(By.XPATH, '//*[@id="DataBase"]').send_keys(datetime.now().strftime("%d%m%Y")) # escreve a data de hoje
                     self.find_element(By.XPATH, '//*[@id="Header"]/div[1]/img[1]').click() #<-------------------
-                    sleep(1)
+                    sleep(3)
+                    
+                    self.find_element(By.ID, 'parametrosReport').location_once_scrolled_into_view
+                    
                     self.find_element(By.XPATH, '//*[@id="parametrosReport"]/div[4]/div/div[2]/div/button').click() # clica em Tipo Parcela
                     self.find_element(By.XPATH, '//*[@id="parametrosReport"]/div[4]/div/div[2]/div/ul/li[2]/a/label/input').click() # clica em Todos
                     self.find_element(By.XPATH, '//*[@id="parametrosReport"]/div[4]/div/div[2]/div/button').click() # clica em Tipo Parcela
@@ -504,13 +508,24 @@ class Imobme(NavegadorChrome):
             for _ in range(5):
                 try:
                     self._select_relatorio("IMOBME - Relação de Clientes")
-                    sleep(.5)
+                    sleep(2)
                     
                     self.find_element(By.XPATH, '//*[@id="tipoReportCliente_chosen"]').click() # clica em tipo de relatorio
                     self.find_element(By.XPATH, '//*[@id="tipoReportCliente_chosen_o_1"]').click() # clica em clientes x contratos
+                    
+                    try:
+                        for h4 in self.find_elements(By.TAG_NAME, 'h4'):
+                            if h4.text == "Relatórios":
+                                h4.click()
+                                h4.location_once_scrolled_into_view
+                                break
+                    except:
+                        pass
+                    
                     self.find_element(By.XPATH, '//*[@id="dvTipoContrato"]/div/button').click() # clica em tipo de contrato
                     self.find_element(By.XPATH, '//*[@id="dvTipoContrato"]/div/ul/li[2]/a/label/input').click() # clica em todos
                     self.find_element(By.XPATH, '//*[@id="dvTipoContrato"]/div/button').click() # clica em tipo de contrato
+                    
                     self.find_element(By.XPATH, '//*[@id="dvEmpreendimento"]/div[1]/div/div/button').click() # clica em empreendimentos
                     self.find_element(By.XPATH, '//*[@id="dvEmpreendimento"]/div[1]/div/div/ul/li[2]/a/label/input').click() # clica em todos
                     self.find_element(By.XPATH, '//*[@id="dvEmpreendimento"]/div[1]/div/div/button').click() # clica em empreendimentos
@@ -519,6 +534,7 @@ class Imobme(NavegadorChrome):
                     self.find_element(By.XPATH, '//*[@id="DataFim"]').send_keys(datetime.now().strftime("%d%m%Y")) # escreve a data de hoje
                     self.find_element(By.XPATH, '//*[@id="Header"]/div[1]/img[1]').click() #<-------------------
                     
+                    #import pdb; pdb.set_trace()
                     self.find_element(By.XPATH, '//*[@id="GerarRelatorio"]').click() # clica em gerar relatorio
                     sleep(7)
                     ids_relatorios["imobme_relacao_clientes_x_clientes"] = self.find_element(By.XPATH, '//*[@id="result-table"]/tbody/tr[1]/td[1]').text
