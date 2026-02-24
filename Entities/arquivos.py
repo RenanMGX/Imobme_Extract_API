@@ -1,6 +1,7 @@
 import os
 import xlwings as xw
 import pandas as pd
+import pythoncom
 import json
 import shutil
 
@@ -25,12 +26,16 @@ class Arquivos:
         if not file_path.lower().endswith(('.xls', '.xlsx', '.xlsm')):
             raise ValueError("O arquivo deve ser uma planilha do Excel com extensão .xls, .xlsx ou .xlsm")
         
-        app = xw.App(visible=False)
-        with app.books.open(file_path) as wb:
-            if 'Parâmetros' in wb.sheet_names:
-                wb.sheets['Parâmetros'].delete()
-            wb.save()
-        app.quit()
+        pythoncom.CoInitialize()
+        try:
+            app = xw.App(visible=False)
+            with app.books.open(file_path) as wb:
+                if 'Parâmetros' in wb.sheet_names:
+                    wb.sheets['Parâmetros'].delete()
+                wb.save()
+            app.quit()
+        finally:
+            pythoncom.CoUninitialize()
         
         Functions().fechar_excel(file_path)
         

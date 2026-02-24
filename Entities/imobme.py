@@ -130,7 +130,7 @@ class Imobme(NavegadorChrome):
             arquivos = os.listdir(self.download_path)
             arquivos_caminhos = [os.path.join(self.download_path, f) for f in arquivos]
             file = max(arquivos_caminhos, key=os.path.getmtime)
-            if not file.endswith('.crdownload'):
+            if not file.endswith('.crdownload') and not file.endswith('.tmp'):
                 sleep(3)
                 return file
             sleep(1)
