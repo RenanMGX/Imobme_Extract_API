@@ -70,15 +70,16 @@ class ExecuteAPP:
     def _extrair_relatorios(self, grupos:list) -> List[dict]:
         global lock
         
-        with lock:
-            imob = Imobme(
-                login=self.__login,
-                password=self.__password,
-                url=self.__url,
-                headless=self.headless,
-            )
-
+        imob = None
         try:
+            with lock:
+                imob = Imobme(
+                    login=self.__login,
+                    password=self.__password,
+                    url=self.__url,
+                    headless=self.headless,
+                )
+
             resultado = imob.extrair_relatorios(grupos)
         except Exception as err:
             if maestro:
@@ -87,7 +88,8 @@ class ExecuteAPP:
             print(P((type(err), err), color='red'))
             resultado = []
         finally:
-            imob._encerrar()
+            if imob is not None:
+                imob._encerrar()
             del imob
             
         #all_dir_paths = []
