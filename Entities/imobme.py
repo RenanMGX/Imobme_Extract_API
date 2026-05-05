@@ -421,9 +421,9 @@ class Imobme(NavegadorChrome):
                     self._select_relatorio("IMOBME - Dados do Contrato")
                     sleep(.5)
                     
-                    self.find_element(By.XPATH, '//*[@id="dvEmpreendimento"]/div[1]/div/div/button').click() # clica em Empreendimentos
-                    self.find_element(By.XPATH, '//*[@id="dvEmpreendimento"]/div[1]/div/div/ul/li[2]/a/label').click() # clica em todos
-                    self.find_element(By.XPATH, '//*[@id="dvEmpreendimento"]/div[1]/div/div/button').click() # clica em Empreendimentos
+                    self.find_element(By.XPATH, '//*[@id="dvEmpreendimento"]/div[2]/div/div/button').click() # clica em Empreendimentos
+                    self.find_element(By.XPATH, '//*[@id="dvEmpreendimento"]/div[2]/div/div/ul/li[2]/a/label').click() # clica em todos
+                    self.find_element(By.XPATH, '//*[@id="dvEmpreendimento"]/div[2]/div/div/button').click() # clica em Empreendimentos
                     self.find_element(By.XPATH, '//*[@id="parametrosReport"]/div[1]/div').click() # clica fora
                     self.find_element(By.XPATH, '//*[@id="parametrosReport"]/div[3]/div[1]/div/button').click() # clica em tipos de contrato
                     self.find_element(By.XPATH, '//*[@id="parametrosReport"]/div[3]/div[1]/div/ul/li[2]/a/label/input').click() # clica em Todos
