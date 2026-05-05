@@ -454,9 +454,9 @@ class Imobme(NavegadorChrome):
                     self.find_element(By.XPATH, '//*[@id="Header"]/div[1]/img[1]').click() #<-------------------
                     self.find_element(By.XPATH, '//*[@id="DataFim"]').send_keys((datetime.now() + relativedelta(years=25)).strftime("%d%m%Y")) # escreve a data de fim padrao com a data atual mais 25 anos
                     self.find_element(By.XPATH, '//*[@id="Header"]/div[1]/img[1]').click() #<-------------------
-                    self.find_element(By.XPATH, '//*[@id="dvEmpreendimento"]/div[1]/div/div/button').click() # clica em Empreendimentos
-                    self.find_element(By.XPATH, '//*[@id="dvEmpreendimento"]/div[1]/div/div/ul/li[2]/a/label/input').click() # clica em todos
-                    self.find_element(By.XPATH, '//*[@id="dvEmpreendimento"]/div[1]/div/div/button').click() # clica em Empreendimentos
+                    self.find_element(By.XPATH, '//*[@id="dvEmpreendimento"]/div[2]/div/div/button').click() # clica em Empreendimentos
+                    self.find_element(By.XPATH, '//*[@id="dvEmpreendimento"]/div[2]/div/div/ul/li[2]/a/label/input').click() # clica em todos
+                    self.find_element(By.XPATH, '//*[@id="dvEmpreendimento"]/div[2]/div/div/button').click() # clica em Empreendimentos
                     self.find_element(By.XPATH, '//*[@id="DataBase"]').send_keys(datetime.now().strftime("%d%m%Y")) # escreve a data de hoje
                     self.find_element(By.XPATH, '//*[@id="Header"]/div[1]/img[1]').click() #<-------------------
                     sleep(3)

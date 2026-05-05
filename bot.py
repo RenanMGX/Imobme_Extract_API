@@ -47,7 +47,24 @@ class Execute:
             raise Exception(f"O parametro {lista_relatorios_param=} está vazio!")
         else:
             temp_lista_relatorios = str(lista_relatorios_param)
-            lista_relatorios:dict = {value.split(',')[0]:{"file_name": value.split(',')[1]} for value in temp_lista_relatorios.split(';')}
+            if ";" in temp_lista_relatorios:
+                lista_relatorios = {}
+                for value in temp_lista_relatorios.split(';'):
+                    try:
+                        key, file_name = value.split(',')
+                        lista_relatorios[key] = {"file_name": file_name}
+                    except ValueError:
+                        continue
+            else:
+                lista_relatorios = {}
+                try:
+                    key, file_name = temp_lista_relatorios.split(',')
+                    lista_relatorios[key] = {"file_name": file_name}
+                except ValueError:
+                    pass
+
+        if not lista_relatorios:
+            raise Exception("Nenhum relatório encontrado na lista de relatórios. Verifique o formato do parâmetro 'lista_relatorios'.")
 
         destino_param = execution.parameters.get("destino")
         if not destino_param:
