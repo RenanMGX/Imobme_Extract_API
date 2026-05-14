@@ -123,6 +123,32 @@ class Execute:
                     
         finally:    
             app._limpar()
+            
+        # crd_botcity_param = execution.parameters.get("crd_botcity")
+        # if not crd_botcity_param:
+        crd_botcity = "BotCity"
+        # else:
+        #     crd_botcity = str(crd_botcity_param)
+            
+            
+        if crd_botcity:
+            print(crd_botcity)
+            botcity_task_param = execution.parameters.get("botcity_task")
+            if botcity_task_param:
+                print(botcity_task_param)
+                botcity_task:dict = json.loads(str(botcity_task_param))
+                if botcity_task.get("label") and botcity_task.get("param"):
+                    print(botcity_task)
+                    from patrimar_dependencies.task_botcity import TaskBotCity
+                    bot = TaskBotCity(
+                        login=maestro.get_credential(label=crd_botcity, key="login"),
+                        key=maestro.get_credential(label=crd_botcity, key="key"),
+                    )
+                    resp = bot.start_task(
+                        label=botcity_task["label"],
+                        params=botcity_task["param"]
+                    )
+                    print(f"{resp=}")
 
         p.add_processado()
 
